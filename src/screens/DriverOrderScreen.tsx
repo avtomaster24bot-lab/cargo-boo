@@ -5,16 +5,18 @@ import { StatusBadge } from '../components/StatusBadge'
 import { vehicleById } from '../data/vehicles'
 import { formatDateTime, km, tenge } from '../lib/format'
 import { NEXT_STATUS_LABEL } from '../lib/status'
+import { isSubscriptionActive } from '../lib/subscription'
 import { actions, useStore } from '../store'
 
 export function DriverOrderScreen() {
-  const { screen, orders } = useStore()
+  const { screen, orders, subscription } = useStore()
   const order = orders.find((o) => o.id === screen.orderId)
   const [price, setPrice] = useState(order?.clientPrice ?? 0)
   if (!order) return null
   const v = vehicleById(order.vehicleId)
   const nextLabel = NEXT_STATUS_LABEL[order.status]
   const searching = order.status === 'searching'
+  const canTake = isSubscriptionActive(subscription)
 
   return (
     <div className="flex min-h-full flex-col bg-cream">
@@ -55,7 +57,19 @@ export function DriverOrderScreen() {
           {order.options.urgent ? ' · срочно' : ''}
         </p>
 
-        {searching && (
+        {searching && !canTake && (
+          <div className="card mt-5 p-4">
+            <p className="font-extrabold">Нужен абонемент</p>
+            <p className="mt-1 text-sm text-ink-soft">
+              Без активной подписки нельзя принять заказ или предложить свою цену.
+            </p>
+            <button type="button" className="cta mt-3" onClick={() => actions.go({ name: 'tariffs' })}>
+              Оформить абонемент
+            </button>
+          </div>
+        )}
+
+        {searching && canTake && (
           <div className="mt-5 space-y-3">
             <div className="flex items-center gap-2">
               <button

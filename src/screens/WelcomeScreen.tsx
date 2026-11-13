@@ -48,7 +48,7 @@ export function WelcomeScreen() {
             Войти как клиент
           </button>
           <button type="button" className="cta cta-navy border border-white/10" onClick={() => enter('driver')}>
-            Войти как водитель
+            Войти как водитель · 7 дней бесплатно
           </button>
           <p className="px-2 text-center text-xs leading-relaxed text-white/45">
             Демо-режим: данные хранятся только в этом браузере. Ссылкой можно поделиться — каждый

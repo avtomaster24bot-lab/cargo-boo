@@ -22,6 +22,7 @@ const HIDDEN: ScreenName[] = [
   'chat',
   'rating',
   'driver-order',
+  'tariffs',
 ]
 
 export function BottomNav() {

@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import { formatDate } from '../lib/format'
+import { isSubscriptionActive, kindLabel, remainingLabel } from '../lib/subscription'
 import { actions, useStore } from '../store'
 
 export function ProfileScreen() {
-  const { name, phone, role } = useStore()
+  const { name, phone, role, subscription } = useStore()
+  const subActive = isSubscriptionActive(subscription)
   const [n, setN] = useState(name)
   const [p, setP] = useState(phone)
 
@@ -50,6 +53,29 @@ export function ProfileScreen() {
         Чтобы принять свой же заказ, переключитесь в режим водителя. Предложения водителей в
         клиентском режиме приходят автоматически — так удобно показать сервис по ссылке.
       </p>
+
+      <button
+        type="button"
+        onClick={() => actions.go({ name: 'tariffs' })}
+        className="card mt-5 w-full p-4 text-left"
+      >
+        <p className="text-xs font-bold uppercase text-ink-soft">Абонемент водителя</p>
+        {subActive ? (
+          <>
+            <p className="mt-1 font-extrabold text-teal-dark">
+              {kindLabel(subscription.kind)} · {remainingLabel(subscription.expiresAt)}
+            </p>
+            {subscription.expiresAt && (
+              <p className="text-sm text-ink-soft">До {formatDate(subscription.expiresAt)}</p>
+            )}
+          </>
+        ) : (
+          <p className="mt-1 font-extrabold">
+            {subscription.trialUsed ? 'Подписка не активна' : '7 дней бесплатно при входе как водитель'}
+          </p>
+        )}
+        <p className="mt-2 text-sm font-bold text-teal-dark">Тарифы и история оплат →</p>
+      </button>
 
       <div className="card mt-6 p-4 text-sm leading-relaxed">
         <p className="font-extrabold">Карго Боо · демо</p>

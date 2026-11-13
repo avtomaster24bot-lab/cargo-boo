@@ -33,3 +33,12 @@ export function formatDateTime(iso: string): string {
     timeZone: 'Asia/Almaty',
   })
 }
+
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('ru-KZ', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Asia/Almaty',
+  })
+}

@@ -1,11 +1,14 @@
 import { useSyncExternalStore } from 'react'
 import { DRIVERS, driversForVehicle } from './data/drivers'
+import { planById, TRIAL_DAYS, type PlanId } from './data/plans'
 import { estimatePrice } from './lib/pricing'
 import { routeOsrm } from './lib/geo'
 import { shortId, uid } from './lib/id'
 import { NEXT_STATUS } from './lib/status'
+import { defaultSubscription, extendExpiry, isSubscriptionActive } from './lib/subscription'
 import type {
   Draft,
+  DriverSubscription,
   Offer,
   Order,
   OrderOptions,
@@ -13,6 +16,8 @@ import type {
   PaymentMethod,
   Role,
   Screen,
+  SubPayment,
+  SubPaymentMethod,
   VehicleId,
 } from './types'
 
@@ -53,6 +58,8 @@ export interface StoreState {
   draft: Draft
   orders: Order[]
   currentOrderId: string | null
+  subscription: DriverSubscription
+  payments: SubPayment[]
 }
 
 interface PersistShape {
@@ -62,6 +69,8 @@ interface PersistShape {
   phone: string
   orders: Order[]
   currentOrderId: string | null
+  subscription?: DriverSubscription
+  payments?: SubPayment[]
 }
 
 const initial: StoreState = {
@@ -75,6 +84,8 @@ const initial: StoreState = {
   draft: defaultDraft(),
   orders: [],
   currentOrderId: null,
+  subscription: defaultSubscription(),
+  payments: [],
 }
 
 let state: StoreState = initial
@@ -93,6 +104,8 @@ function persist() {
     phone: state.phone,
     orders: state.orders,
     currentOrderId: state.currentOrderId,
+    subscription: state.subscription,
+    payments: state.payments,
   }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
@@ -144,6 +157,8 @@ function load() {
     phone: saved?.phone ?? '',
     orders: saved?.orders ?? [],
     currentOrderId: saved?.currentOrderId ?? null,
+    subscription: saved?.subscription ?? defaultSubscription(),
+    payments: saved?.payments ?? [],
     screen:
       saved?.role === 'driver'
         ? { name: 'driver' }
@@ -152,6 +167,10 @@ function load() {
           : { name: 'home' },
     stack: [],
     draft: defaultDraft(),
+  }
+  if (state.role === 'driver') {
+    state = withTrial(state)
+    persist()
   }
   emit()
   for (const order of state.orders) {
@@ -231,23 +250,118 @@ function back() {
   })
 }
 
+function withTrial(s: StoreState): StoreState {
+  if (s.subscription.trialUsed) return s
+  if (isSubscriptionActive(s.subscription)) {
+    return { ...s, subscription: { ...s.subscription, trialUsed: true } }
+  }
+  const now = new Date()
+  const expires = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
+  const startedAt = now.toISOString()
+  const expiresAt = expires.toISOString()
+  const payment: SubPayment = {
+    id: uid('pay'),
+    planId: 'trial',
+    amount: 0,
+    method: 'trial',
+    createdAt: startedAt,
+    periodStart: startedAt,
+    periodEnd: expiresAt,
+    status: 'paid',
+  }
+  return {
+    ...s,
+    subscription: {
+      kind: 'trial',
+      startedAt,
+      expiresAt,
+      trialUsed: true,
+    },
+    payments: [payment, ...s.payments],
+  }
+}
+
 function setRole(role: Role) {
-  setState({
-    role,
-    screen: role === 'driver' ? { name: 'driver' } : { name: 'home' },
-    stack: [],
+  setState((s) => {
+    const next: StoreState = {
+      ...s,
+      role,
+      screen: role === 'driver' ? { name: 'driver' } : { name: 'home' },
+      stack: [],
+    }
+    return role === 'driver' ? withTrial(next) : next
   })
 }
 
 function welcome(name: string, phone: string, role: Role) {
-  setState({
-    seenWelcome: true,
-    name: name.trim() || (role === 'driver' ? 'Водитель' : 'Клиент'),
-    phone: phone.trim(),
-    role,
-    screen: role === 'driver' ? { name: 'driver' } : { name: 'home' },
-    stack: [],
+  setState((s) => {
+    const next: StoreState = {
+      ...s,
+      seenWelcome: true,
+      name: name.trim() || (role === 'driver' ? 'Водитель' : 'Клиент'),
+      phone: phone.trim(),
+      role,
+      screen: role === 'driver' ? { name: 'driver' } : { name: 'home' },
+      stack: [],
+    }
+    return role === 'driver' ? withTrial(next) : next
   })
+}
+
+function paySubscription(planId: PlanId, method: SubPaymentMethod): SubPayment | null {
+  const plan = planById(planId)
+  const now = new Date()
+  const periodStart = (isSubscriptionActive(state.subscription) && state.subscription.expiresAt
+    ? new Date(state.subscription.expiresAt)
+    : now
+  ).toISOString()
+  const expires = extendExpiry(state.subscription.expiresAt, plan.days, now)
+  const payment: SubPayment = {
+    id: uid('pay'),
+    planId: plan.id,
+    amount: plan.price,
+    method,
+    createdAt: now.toISOString(),
+    periodStart,
+    periodEnd: expires.toISOString(),
+    status: 'paid',
+  }
+  setState((s) => ({
+    ...s,
+    subscription: {
+      kind: plan.id,
+      startedAt: s.subscription.startedAt ?? now.toISOString(),
+      expiresAt: expires.toISOString(),
+      trialUsed: true,
+    },
+    payments: [payment, ...s.payments],
+  }))
+  return payment
+}
+
+function expireSubscriptionNow() {
+  const now = new Date().toISOString()
+  setState((s) => ({
+    ...s,
+    subscription: {
+      ...s.subscription,
+      expiresAt: s.subscription.expiresAt ? new Date(Date.now() - 1000).toISOString() : now,
+    },
+  }))
+}
+
+function previewExpiryInDays(days: number) {
+  const now = new Date()
+  const expires = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
+  setState((s) => ({
+    ...s,
+    subscription: {
+      kind: s.subscription.kind ?? 'trial',
+      startedAt: s.subscription.startedAt ?? now.toISOString(),
+      expiresAt: expires.toISOString(),
+      trialUsed: true,
+    },
+  }))
 }
 
 function patchDraft(partial: Partial<Draft>) {
@@ -450,8 +564,10 @@ function acceptOffer(orderId: string, offerId: string) {
 }
 
 function driverOffer(orderId: string, price: number, kind: Offer['kind'] = 'counter') {
-  // In demo, the "current user as driver" uses a dedicated id if not in the list.
-  // We attach offers to the first matching vehicle driver or a demo self id.
+  if (!isSubscriptionActive(state.subscription)) {
+    go({ name: 'tariffs' })
+    return
+  }
   const self = demoSelfDriverId()
   pushOffer(orderId, self, price, kind)
 }
@@ -461,6 +577,10 @@ function demoSelfDriverId(): string {
 }
 
 function takeOrder(orderId: string, price?: number) {
+  if (!isSubscriptionActive(state.subscription)) {
+    go({ name: 'tariffs' })
+    return
+  }
   const order = state.orders.find((o) => o.id === orderId)
   if (!order || order.status !== 'searching') return
   const now = new Date().toISOString()
@@ -594,7 +714,15 @@ function resetDemo() {
   } catch {
     /* ignore */
   }
-  state = { ...initial, ready: true, seenWelcome: true, name: state.name, phone: state.phone }
+  state = {
+    ...initial,
+    ready: true,
+    seenWelcome: true,
+    name: state.name,
+    phone: state.phone,
+    subscription: defaultSubscription(),
+    payments: [],
+  }
   persist()
   emit()
 }
@@ -635,6 +763,9 @@ export const actions = {
   openOrder,
   selfDriver,
   demoSelfDriverId,
+  paySubscription,
+  expireSubscriptionNow,
+  previewExpiryInDays,
 }
 
 function subscribe(fn: () => void) {

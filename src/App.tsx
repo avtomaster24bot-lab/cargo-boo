@@ -10,6 +10,7 @@ import { ProfileScreen } from './screens/ProfileScreen'
 import { RatingScreen } from './screens/RatingScreen'
 import { SearchScreen } from './screens/SearchScreen'
 import { TrackingScreen } from './screens/TrackingScreen'
+import { TariffsScreen } from './screens/TariffsScreen'
 import { WelcomeScreen } from './screens/WelcomeScreen'
 import { useStore } from './store'
 import type { ScreenName } from './types'
@@ -53,6 +54,8 @@ function ScreenView({ name }: { name: ScreenName }) {
       return <ChatScreen />
     case 'rating':
       return <RatingScreen />
+    case 'tariffs':
+      return <TariffsScreen />
     default:
       return <HomeScreen />
   }

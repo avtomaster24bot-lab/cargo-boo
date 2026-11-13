@@ -35,6 +35,7 @@ export type ScreenName =
   | 'driver-order'
   | 'chat'
   | 'rating'
+  | 'tariffs'
 
 export interface GeoPoint {
   lat: number
@@ -147,4 +148,28 @@ export interface Screen {
   name: ScreenName
   orderId?: string
   addressTarget?: 'pickup' | 'dropoff'
+}
+
+export type PlanId = 'day' | 'week' | 'month'
+
+export type SubscriptionKind = 'trial' | PlanId
+
+export type SubPaymentMethod = 'kaspi' | 'card'
+
+export interface DriverSubscription {
+  kind: SubscriptionKind | null
+  startedAt: string | null
+  expiresAt: string | null
+  trialUsed: boolean
+}
+
+export interface SubPayment {
+  id: string
+  planId: PlanId | 'trial'
+  amount: number
+  method: SubPaymentMethod | 'trial'
+  createdAt: string
+  periodStart: string
+  periodEnd: string
+  status: 'paid'
 }

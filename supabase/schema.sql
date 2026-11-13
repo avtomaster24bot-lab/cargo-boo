@@ -127,3 +127,53 @@ create policy "clients insert own orders" on public.orders
 
 create policy "participants update orders" on public.orders
   for update using (client_id = auth.uid() or assigned_driver_id = auth.uid());
+
+create type public.subscription_kind as enum ('trial', 'day', 'week', 'month');
+create type public.sub_payment_method as enum ('kaspi', 'card', 'trial');
+
+create table public.subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  driver_id uuid not null references public.drivers (id) on delete cascade,
+  kind public.subscription_kind not null,
+  started_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  trial_used boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create unique index subscriptions_one_current_per_driver
+  on public.subscriptions (driver_id);
+
+create table public.subscription_payments (
+  id uuid primary key default gen_random_uuid(),
+  driver_id uuid not null references public.drivers (id) on delete cascade,
+  subscription_id uuid references public.subscriptions (id) on delete set null,
+  plan_id text not null check (plan_id in ('trial', 'day', 'week', 'month')),
+  amount integer not null default 0,
+  method public.sub_payment_method not null,
+  period_start timestamptz not null,
+  period_end timestamptz not null,
+  status text not null default 'paid' check (status in ('paid', 'failed', 'pending')),
+  created_at timestamptz not null default now()
+);
+
+create index subscription_payments_driver_idx
+  on public.subscription_payments (driver_id, created_at desc);
+
+alter table public.subscriptions enable row level security;
+alter table public.subscription_payments enable row level security;
+
+create policy "drivers read own subscription" on public.subscriptions
+  for select using (driver_id = auth.uid());
+
+create policy "drivers insert own subscription" on public.subscriptions
+  for insert with check (driver_id = auth.uid());
+
+create policy "drivers update own subscription" on public.subscriptions
+  for update using (driver_id = auth.uid());
+
+create policy "drivers read own payments" on public.subscription_payments
+  for select using (driver_id = auth.uid());
+
+create policy "drivers insert own payments" on public.subscription_payments
+  for insert with check (driver_id = auth.uid());
