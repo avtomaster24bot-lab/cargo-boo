@@ -1,4 +1,4 @@
-const CACHE = 'vezu-shell-v1'
+const CACHE = 'vezu-shell-v2'
 const PRECACHE = [
   '/cargo-boo/',
   '/cargo-boo/index.html',
@@ -6,6 +6,9 @@ const PRECACHE = [
   '/cargo-boo/favicon.svg',
   '/cargo-boo/icon-192.png',
   '/cargo-boo/icon-512.png',
+  '/cargo-boo/icon-192-maskable.png',
+  '/cargo-boo/icon-512-maskable.png',
+  '/cargo-boo/apple-touch-icon.png',
 ]
 
 self.addEventListener('install', (event) => {

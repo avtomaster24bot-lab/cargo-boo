@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { InstallButton } from '../components/InstallApp'
 import { LegalLinks } from '../components/LegalLinks'
 import { VEHICLES } from '../data/vehicles'
 import { hasValidConsent, legalUrl } from '../lib/privacy'
@@ -168,6 +169,7 @@ export function WelcomeScreen() {
           >
             Войти как водитель · 7 дней бесплатно
           </button>
+          <InstallButton light />
           <p className="px-2 text-center text-xs leading-relaxed text-white/45">
             Демо-режим: данные хранятся только в этом браузере. Ссылкой можно поделиться — каждый
             откроет свой сеанс. Без отмеченных согласий вход недоступен.

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { InstallButton } from '../components/InstallApp'
 import { LegalLinks } from '../components/LegalLinks'
 import { VEHICLES } from '../data/vehicles'
 import { formatDate } from '../lib/format'
@@ -169,6 +170,17 @@ export function ProfileScreen() {
         >
           Удалить аккаунт и данные
         </button>
+      </section>
+
+      <section className="card mt-5 p-4">
+        <p className="text-xs font-bold uppercase text-ink-soft">Приложение</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          Добавьте Vezu на главный экран телефона, чтобы открывать сервис как приложение. На iPhone
+          это делается через Safari: «Поделиться» → «На экран Домой».
+        </p>
+        <div className="mt-3">
+          <InstallButton />
+        </div>
       </section>
 
       <div className="card mt-6 p-4 text-sm leading-relaxed">

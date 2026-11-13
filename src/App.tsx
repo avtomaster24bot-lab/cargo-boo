@@ -1,4 +1,6 @@
-import { BottomNav } from './components/BottomNav'
+import { BottomNav, NAV_HIDDEN_SCREENS } from './components/BottomNav'
+import { DriverStayOpen } from './components/DriverStayOpen'
+import { InstallBanner } from './components/InstallApp'
 import { AddressScreen } from './screens/AddressScreen'
 import { ChatScreen } from './screens/ChatScreen'
 import { ConfirmScreen } from './screens/ConfirmScreen'
@@ -31,7 +33,9 @@ export default function App() {
       <div className="flex min-h-0 flex-1 flex-col">
         <ScreenView name={screen.name} />
       </div>
+      <InstallBanner hidden={NAV_HIDDEN_SCREENS.includes(screen.name)} />
       <BottomNav />
+      <DriverStayOpen />
     </div>
   )
 }

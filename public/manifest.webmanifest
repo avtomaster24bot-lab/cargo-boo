@@ -2,16 +2,17 @@
   "name": "Vezu",
   "short_name": "Vezu",
   "description": "Грузоперевозки по Казахстану почти в один тап",
+  "id": "/cargo-boo/",
   "start_url": "/cargo-boo/",
   "scope": "/cargo-boo/",
   "display": "standalone",
-  "background_color": "#f3efe6",
+  "background_color": "#1E3A7B",
   "theme_color": "#1E3A7B",
   "lang": "ru",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/cargo-boo/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/cargo-boo/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/cargo-boo/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/cargo-boo/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

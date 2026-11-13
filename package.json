@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "node --experimental-strip-types src/lib/privacy.test.ts",
+    "test": "node --experimental-strip-types src/lib/privacy.test.ts && node --experimental-strip-types src/lib/install.test.ts && node scripts/pwa-check.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

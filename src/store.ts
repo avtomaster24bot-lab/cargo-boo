@@ -5,6 +5,7 @@ import { estimatePrice } from './lib/pricing'
 import { routeOsrm } from './lib/geo'
 import { shortId, uid } from './lib/id'
 import { NEXT_STATUS } from './lib/status'
+import { queueStayOpenPrompt } from './lib/driverSession'
 import { anonymiseStaleOrders, hasValidConsent, PRIVACY_POLICY_VERSION, TERMS_VERSION } from './lib/privacy'
 import { defaultSubscription, extendExpiry, isSubscriptionActive } from './lib/subscription'
 import type {
@@ -767,6 +768,7 @@ function takeOrder(orderId: string, price?: number) {
       },
     ],
   }))
+  queueStayOpenPrompt(orderId)
   setState({
     currentOrderId: orderId,
     screen: { name: 'driver-order', orderId },

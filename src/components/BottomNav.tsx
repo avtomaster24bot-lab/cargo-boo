@@ -14,7 +14,7 @@ const DRIVER = [
   { name: 'profile' as const, label: 'Профиль', icon: UserRound },
 ]
 
-const HIDDEN: ScreenName[] = [
+export const NAV_HIDDEN_SCREENS: ScreenName[] = [
   'address',
   'confirm',
   'search',
@@ -27,7 +27,7 @@ const HIDDEN: ScreenName[] = [
 
 export function BottomNav() {
   const { role, screen } = useStore()
-  if (HIDDEN.includes(screen.name)) return null
+  if (NAV_HIDDEN_SCREENS.includes(screen.name)) return null
   const items = role === 'driver' ? DRIVER : CLIENT
   return (
     <nav className="safe-bottom sticky bottom-0 z-30 border-t border-line bg-paper/95 backdrop-blur">

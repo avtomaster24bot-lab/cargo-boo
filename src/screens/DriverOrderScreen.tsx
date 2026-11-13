@@ -1,11 +1,13 @@
 import { ChevronLeft, MessageCircle, Minus, Plus } from 'lucide-react'
 import { ContactPhone } from '../components/ContactPhone'
+import { DriverStayOpenBanner } from '../components/DriverStayOpen'
 import { useState } from 'react'
 import { MapView } from '../components/MapView'
 import { StatusBadge } from '../components/StatusBadge'
 import { vehicleById } from '../data/vehicles'
 import { formatDateTime, km, tenge } from '../lib/format'
 import { NEXT_STATUS_LABEL } from '../lib/status'
+import { isActiveDriverStatus } from '../lib/driverSession'
 import { isSubscriptionActive } from '../lib/subscription'
 import { actions, useStore } from '../store'
 
@@ -35,6 +37,7 @@ export function DriverOrderScreen() {
       </header>
 
       <div className="sheet relative -mt-5 flex-1 px-4 pb-8 pt-5">
+        {isActiveDriverStatus(order.status) && <DriverStayOpenBanner />}
         <p className="text-xs font-bold text-ink-soft">
           {order.shortId} · {formatDateTime(order.createdAt)} · {v.emoji} {v.name} · {km(order.distanceKm)}
         </p>
