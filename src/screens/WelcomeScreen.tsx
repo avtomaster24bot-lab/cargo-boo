@@ -12,14 +12,14 @@ export function WelcomeScreen() {
 
   return (
     <div className="flex min-h-full flex-col bg-navy text-white">
-      <div className="safe-top pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,_rgba(14,159,138,0.45),_transparent_60%)]" />
+      <div className="safe-top pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,_rgba(255,106,26,0.45),_transparent_60%)]" />
       <div className="relative flex flex-1 flex-col px-6 pb-8 pt-16">
         <div className="mb-8">
           <div className="mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-teal text-3xl shadow-lg shadow-teal/30">
             🚚
           </div>
           <p className="text-sm font-semibold tracking-wide text-teal">Алматы · Казахстан</p>
-          <h1 className="font-display mt-2 text-4xl font-extrabold leading-tight">Карго Боо</h1>
+          <h1 className="font-display mt-2 text-4xl font-extrabold leading-tight">Vezu</h1>
           <p className="mt-3 max-w-[20rem] text-[15px] leading-relaxed text-white/75">
             Грузоперевозки почти в один тап. Как inDrive, Яндекс Доставка и FaFa — всё в одном
             сервисе.

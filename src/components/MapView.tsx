@@ -77,7 +77,7 @@ export function MapView({
         {route.length > 1 && (
           <Polyline
             positions={route}
-            pathOptions={{ color: '#0b7d6d', weight: 5, opacity: 0.9, lineJoin: 'round' }}
+            pathOptions={{ color: '#1E3A7B', weight: 5, opacity: 0.9, lineJoin: 'round' }}
           />
         )}
         {pickup && <Marker position={[pickup.lat, pickup.lng]} icon={pin('from', 'A')} />}
@@ -87,7 +87,7 @@ export function MapView({
             key={d.id}
             center={[d.lat, d.lng]}
             radius={8}
-            pathOptions={{ color: '#12233a', fillColor: '#f5a524', fillOpacity: 1, weight: 2 }}
+            pathOptions={{ color: '#1E3A7B', fillColor: '#FF6A1A', fillOpacity: 1, weight: 2 }}
           />
         ))}
       </MapContainer>

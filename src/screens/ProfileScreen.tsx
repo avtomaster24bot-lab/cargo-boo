@@ -78,7 +78,7 @@ export function ProfileScreen() {
       </button>
 
       <div className="card mt-6 p-4 text-sm leading-relaxed">
-        <p className="font-extrabold">Карго Боо · демо</p>
+        <p className="font-extrabold">Vezu · демо</p>
         <p className="mt-1 text-ink-soft">
           Алматы, цены в тенге. Карта OpenStreetMap, маршруты OSRM, поиск адресов Nominatim.
           Оплата (наличные, карта, Kaspi) пока только выбирается.

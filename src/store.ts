@@ -627,7 +627,7 @@ function selfDriver() {
     name,
     phone: state.phone || '+7 700 000 00 00',
     vehicleId: 'gazelle' as VehicleId,
-    plate: '777 BOO 02',
+    plate: '777 VEZ 02',
     rating: 5,
     trips: 12,
     hue: 168,

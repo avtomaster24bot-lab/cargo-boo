@@ -28,6 +28,6 @@
     "typescript": "~7.0.2",
     "vite": "^8.3.6"
   },
-  "description": "Карго Боо — грузоперевозки почти в один тап",
+  "description": "Vezu — грузоперевозки почти в один тап",
   "homepage": "https://avtomaster24bot-lab.github.io/cargo-boo/"
 }

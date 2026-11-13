@@ -1,4 +1,4 @@
-const CACHE = 'cargo-boo-v1'
+const CACHE = 'vezu-shell-v1'
 const PRECACHE = [
   '/cargo-boo/',
   '/cargo-boo/index.html',

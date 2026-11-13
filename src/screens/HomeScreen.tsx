@@ -41,7 +41,7 @@ export function HomeScreen() {
 
       <header className="safe-top pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between px-4">
         <div className="pointer-events-auto rounded-3xl bg-navy/90 px-4 py-3 text-white shadow-lg backdrop-blur">
-          <p className="font-display text-lg font-bold leading-none">Карго Боо</p>
+          <p className="font-display text-lg font-bold leading-none">Vezu</p>
           <p className="mt-1 text-[11px] text-white/70">
             {name ? `Привет, ${name}` : 'Грузы по Алматы'}
           </p>

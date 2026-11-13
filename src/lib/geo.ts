@@ -3,7 +3,7 @@ import type { GeoPoint } from '../types'
 
 const NOMINATIM = 'https://nominatim.openstreetmap.org'
 const OSRM = 'https://router.project-osrm.org/route/v1/driving'
-const UA = 'CargoBoo/1.0 (https://github.com/avtomaster24bot-lab/cargo-boo)'
+const UA = 'Vezu/1.0 (https://github.com/avtomaster24bot-lab/cargo-boo)'
 
 export function haversineKm(
   a: { lat: number; lng: number },
