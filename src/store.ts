@@ -5,8 +5,11 @@ import { estimatePrice } from './lib/pricing'
 import { routeOsrm } from './lib/geo'
 import { shortId, uid } from './lib/id'
 import { NEXT_STATUS } from './lib/status'
+import { anonymiseStaleOrders, hasValidConsent, PRIVACY_POLICY_VERSION, TERMS_VERSION } from './lib/privacy'
 import { defaultSubscription, extendExpiry, isSubscriptionActive } from './lib/subscription'
 import type {
+  AuditEvent,
+  ConsentRecord,
   Draft,
   DriverSubscription,
   Offer,
@@ -53,6 +56,10 @@ export interface StoreState {
   role: Role
   name: string
   phone: string
+  driverVehicleId: VehicleId
+  driverPlate: string
+  consent: ConsentRecord | null
+  auditLog: AuditEvent[]
   screen: Screen
   stack: Screen[]
   draft: Draft
@@ -67,6 +74,10 @@ interface PersistShape {
   role: Role
   name: string
   phone: string
+  driverVehicleId?: VehicleId
+  driverPlate?: string
+  consent?: ConsentRecord | null
+  auditLog?: AuditEvent[]
   orders: Order[]
   currentOrderId: string | null
   subscription?: DriverSubscription
@@ -79,6 +90,10 @@ const initial: StoreState = {
   role: 'client',
   name: '',
   phone: '',
+  driverVehicleId: 'gazelle',
+  driverPlate: '',
+  consent: null,
+  auditLog: [],
   screen: { name: 'home' },
   stack: [],
   draft: defaultDraft(),
@@ -102,6 +117,10 @@ function persist() {
     role: state.role,
     name: state.name,
     phone: state.phone,
+    driverVehicleId: state.driverVehicleId,
+    driverPlate: state.driverPlate,
+    consent: state.consent,
+    auditLog: state.auditLog,
     orders: state.orders,
     currentOrderId: state.currentOrderId,
     subscription: state.subscription,
@@ -127,6 +146,33 @@ function persist() {
   }
 }
 
+
+function migratePaymentMethod(method: string): SubPayment['method'] {
+  if (method === 'card') return 'halyk'
+  if (method === 'kaspi' || method === 'halyk' || method === 'freedom' || method === 'trial') {
+    return method
+  }
+  return 'kaspi'
+}
+
+function migrateOrder(order: Order): Order {
+  return {
+    ...order,
+    clientName: order.clientName ?? '',
+    clientPhone: order.clientPhone ?? '',
+  }
+}
+
+function appendAudit(list: AuditEvent[], action: AuditEvent['action'], detail?: string): AuditEvent[] {
+  const event: AuditEvent = {
+    id: uid('aud'),
+    action,
+    at: new Date().toISOString(),
+    detail,
+  }
+  return [event, ...list].slice(0, 200)
+}
+
 function setState(patch: Partial<StoreState> | ((s: StoreState) => StoreState)) {
   state = typeof patch === 'function' ? patch(state) : { ...state, ...patch }
   persist()
@@ -148,30 +194,45 @@ function load() {
   } catch {
     saved = null
   }
+  const loadedOrders = (saved?.orders ?? []).map(migrateOrder)
+  const anonymised = anonymiseStaleOrders(loadedOrders)
+  let auditLog = saved?.auditLog ?? []
+  if (anonymised.changed > 0) {
+    auditLog = appendAudit(auditLog, 'orders_anonymised', `заказов: ${anonymised.changed}`)
+  }
+  const consent = saved?.consent ?? null
+  const seenWelcome = (saved?.seenWelcome ?? false) && hasValidConsent(consent)
   state = {
     ...initial,
     ready: true,
-    seenWelcome: saved?.seenWelcome ?? false,
+    seenWelcome,
     role: saved?.role ?? 'client',
     name: saved?.name ?? '',
     phone: saved?.phone ?? '',
-    orders: saved?.orders ?? [],
+    driverVehicleId: saved?.driverVehicleId ?? 'gazelle',
+    driverPlate: saved?.driverPlate ?? '',
+    consent,
+    auditLog,
+    orders: anonymised.orders,
     currentOrderId: saved?.currentOrderId ?? null,
     subscription: saved?.subscription ?? defaultSubscription(),
-    payments: saved?.payments ?? [],
+    payments: (saved?.payments ?? []).map((p) => ({
+      ...p,
+      method: migratePaymentMethod(p.method),
+    })),
     screen:
       saved?.role === 'driver'
         ? { name: 'driver' }
         : saved?.currentOrderId
-          ? resumeScreen(saved.orders, saved.currentOrderId)
+          ? resumeScreen(anonymised.orders, saved.currentOrderId)
           : { name: 'home' },
     stack: [],
     draft: defaultDraft(),
   }
-  if (state.role === 'driver') {
+  if (state.role === 'driver' && seenWelcome) {
     state = withTrial(state)
-    persist()
   }
+  persist()
   emit()
   for (const order of state.orders) {
     if (order.status === 'searching') resumeOffers(order.id)
@@ -293,19 +354,110 @@ function setRole(role: Role) {
   })
 }
 
-function welcome(name: string, phone: string, role: Role) {
+export interface WelcomeInput {
+  name: string
+  phone: string
+  role: Role
+  consentPrivacy: boolean
+  consentTerms: boolean
+  vehicleId?: VehicleId
+  plate?: string
+}
+
+function welcome(input: WelcomeInput): boolean {
+  if (!input.consentPrivacy || !input.consentTerms) return false
+  const now = new Date().toISOString()
+  const consent: ConsentRecord = {
+    privacyVersion: PRIVACY_POLICY_VERSION,
+    termsVersion: TERMS_VERSION,
+    privacyAcceptedAt: now,
+    termsAcceptedAt: now,
+    withdrawnAt: null,
+  }
   setState((s) => {
+    const role = input.role
     const next: StoreState = {
       ...s,
       seenWelcome: true,
-      name: name.trim() || (role === 'driver' ? 'Водитель' : 'Клиент'),
-      phone: phone.trim(),
+      name: input.name.trim() || (role === 'driver' ? 'Водитель' : 'Клиент'),
+      phone: input.phone.trim(),
+      driverVehicleId: input.vehicleId ?? s.driverVehicleId,
+      driverPlate: (input.plate ?? s.driverPlate).trim(),
+      consent,
+      auditLog: appendAudit(s.auditLog, 'consent_accepted', `политика ${PRIVACY_POLICY_VERSION}`),
       role,
       screen: role === 'driver' ? { name: 'driver' } : { name: 'home' },
       stack: [],
     }
     return role === 'driver' ? withTrial(next) : next
   })
+  return true
+}
+
+function updateProfile(partial: { name?: string; phone?: string; vehicleId?: VehicleId; plate?: string }) {
+  setState((s) => ({
+    ...s,
+    name: partial.name !== undefined ? partial.name.trim() : s.name,
+    phone: partial.phone !== undefined ? partial.phone.trim() : s.phone,
+    driverVehicleId: partial.vehicleId ?? s.driverVehicleId,
+    driverPlate: partial.plate !== undefined ? partial.plate.trim() : s.driverPlate,
+  }))
+}
+
+function exportMyData() {
+  const snapshot = {
+    exportedAt: new Date().toISOString(),
+    profile: {
+      name: state.name,
+      phone: state.phone,
+      role: state.role,
+      driverVehicleId: state.role === 'driver' ? state.driverVehicleId : undefined,
+      driverPlate: state.role === 'driver' ? state.driverPlate : undefined,
+    },
+    consent: state.consent,
+    orders: state.orders,
+    subscription: state.subscription,
+    payments: state.payments,
+    auditLog: state.auditLog,
+  }
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `vezu-my-data-${new Date().toISOString().slice(0, 10)}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+  setState((s) => ({
+    ...s,
+    auditLog: appendAudit(s.auditLog, 'data_exported'),
+  }))
+}
+
+function withdrawConsent() {
+  if (!state.consent || state.consent.withdrawnAt) return
+  const now = new Date().toISOString()
+  setState((s) => ({
+    ...s,
+    seenWelcome: false,
+    consent: s.consent ? { ...s.consent, withdrawnAt: now } : s.consent,
+    auditLog: appendAudit(s.auditLog, 'consent_withdrawn'),
+    screen: { name: 'home' },
+    stack: [],
+  }))
+}
+
+function deleteAccount() {
+  for (const id of offerTimers.keys()) clearOffers(id)
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    /* ignore */
+  }
+  state = {
+    ...initial,
+    ready: true,
+  }
+  emit()
 }
 
 function paySubscription(planId: PlanId, method: SubPaymentMethod): SubPayment | null {
@@ -412,6 +564,8 @@ function placeOrder(): string | null {
     clientPrice: price,
     payment: d.payment,
     status: 'searching',
+    clientName: state.name.trim(),
+    clientPhone: state.phone.trim(),
     offers: [],
     messages: [
       {
@@ -625,9 +779,9 @@ function selfDriver() {
   return {
     id: demoSelfDriverId(),
     name,
-    phone: state.phone || '+7 700 000 00 00',
-    vehicleId: 'gazelle' as VehicleId,
-    plate: '777 VEZ 02',
+    phone: state.phone || '',
+    vehicleId: state.driverVehicleId,
+    plate: state.driverPlate.trim() || 'без номера',
     rating: 5,
     trips: 12,
     hue: 168,
@@ -717,9 +871,13 @@ function resetDemo() {
   state = {
     ...initial,
     ready: true,
-    seenWelcome: true,
+    seenWelcome: hasValidConsent(state.consent),
     name: state.name,
     phone: state.phone,
+    driverVehicleId: state.driverVehicleId,
+    driverPlate: state.driverPlate,
+    consent: state.consent,
+    auditLog: state.auditLog,
     subscription: defaultSubscription(),
     payments: [],
   }
@@ -745,6 +903,10 @@ export const actions = {
   back,
   setRole,
   welcome,
+  updateProfile,
+  exportMyData,
+  withdrawConsent,
+  deleteAccount,
   patchDraft,
   patchOptions,
   setVehicle,

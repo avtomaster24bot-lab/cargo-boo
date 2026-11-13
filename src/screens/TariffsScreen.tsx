@@ -12,8 +12,9 @@ import { actions, useStore } from '../store'
 import type { SubPayment, SubPaymentMethod } from '../types'
 
 const METHODS: { id: SubPaymentMethod; label: string; hint: string }[] = [
-  { id: 'kaspi', label: 'Kaspi', hint: 'Kaspi QR, демо' },
-  { id: 'card', label: 'Карта', hint: 'Visa / Mastercard, демо' },
+  { id: 'kaspi', label: 'Kaspi', hint: 'Лицензированный оператор, демо' },
+  { id: 'halyk', label: 'Halyk', hint: 'Лицензированный банк, демо' },
+  { id: 'freedom', label: 'Freedom', hint: 'Лицензированный банк, демо' },
 ]
 
 export function TariffsScreen() {
@@ -124,7 +125,7 @@ export function TariffsScreen() {
       </div>
 
       <p className="mt-5 text-xs font-bold uppercase tracking-wide text-ink-soft">Оплата</p>
-      <div className="mt-2 grid grid-cols-2 gap-2">
+      <div className="mt-2 grid grid-cols-3 gap-2">
         {METHODS.map((m) => (
           <button
             key={m.id}
@@ -146,8 +147,10 @@ export function TariffsScreen() {
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-ink-soft">
-        Это демо: списания нет, абонемент активируется сразу после кнопки.
+      <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">
+        Оплата абонемента в рабочем сервисе пройдёт через лицензированного оператора в Казахстане
+        (Kaspi, Halyk или Freedom). Номер карты, срок и CVV в приложении не запрашиваются и не
+        хранятся. Это демо: списания нет, абонемент активируется сразу после кнопки.
       </p>
 
       {phase === 'done' && lastPayment ? (
@@ -190,7 +193,7 @@ export function TariffsScreen() {
                 </p>
                 <p className="text-xs text-ink-soft">
                   {formatDateTime(p.createdAt)} ·{' '}
-                  {p.method === 'kaspi' ? 'Kaspi' : p.method === 'card' ? 'Карта' : 'Подарок'}
+                  {p.method === 'kaspi' ? 'Kaspi' : p.method === 'halyk' ? 'Halyk' : p.method === 'freedom' ? 'Freedom' : 'Подарок'}
                 </p>
                 <p className="text-xs text-ink-soft">
                   Доступ до {formatDate(p.periodEnd)}

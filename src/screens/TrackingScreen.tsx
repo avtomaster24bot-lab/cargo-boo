@@ -1,5 +1,6 @@
-import { ChevronLeft, MessageCircle, Phone, Star } from 'lucide-react'
+import { ChevronLeft, MessageCircle, Star } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
+import { CallButton, ContactPhone } from '../components/ContactPhone'
 import { MapView } from '../components/MapView'
 import { StatusBadge } from '../components/StatusBadge'
 import { resolveDriver } from '../lib/drivers'
@@ -8,7 +9,7 @@ import { STATUS_LABELS, TIMELINE, statusIndex } from '../lib/status'
 import { vehicleById } from '../data/vehicles'
 import { actions, useStore } from '../store'
 
-const PAY = { cash: 'Наличные', card: 'Карта', kaspi: 'Kaspi' } as const
+const PAY = { cash: 'Наличные', card: 'Карта через банк', kaspi: 'Kaspi' } as const
 
 export function TrackingScreen() {
   const { screen, orders, role } = useStore()
@@ -67,14 +68,11 @@ export function TrackingScreen() {
               <p className="text-xs text-ink-soft">
                 ★ {driver.rating.toFixed(2)} · {driver.plate} · {minutes(10)} до подачи
               </p>
+              <div className="mt-1 text-xs">
+                <ContactPhone phone={driver.phone} status={order.status} label="Позвонить водителю" />
+              </div>
             </div>
-            <a
-              href={`tel:${driver.phone.replace(/\s/g, '')}`}
-              className="grid h-10 w-10 place-items-center rounded-full bg-mint text-teal-dark"
-              aria-label="Позвонить"
-            >
-              <Phone size={18} />
-            </a>
+            <CallButton phone={driver.phone} status={order.status} ariaLabel="Позвонить водителю" />
             <button
               type="button"
               onClick={() => actions.go({ name: 'chat', orderId: order.id })}

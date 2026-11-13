@@ -12,13 +12,19 @@ import { SearchScreen } from './screens/SearchScreen'
 import { TrackingScreen } from './screens/TrackingScreen'
 import { TariffsScreen } from './screens/TariffsScreen'
 import { WelcomeScreen } from './screens/WelcomeScreen'
+import { PrivacyPage } from './screens/PrivacyPage'
+import { TermsPage } from './screens/TermsPage'
+import { hasValidConsent, legalPageFromPath } from './lib/privacy'
 import { useStore } from './store'
 import type { ScreenName } from './types'
 
 export default function App() {
-  const { ready, seenWelcome, screen } = useStore()
+  const { ready, seenWelcome, screen, consent } = useStore()
+  const legal = legalPageFromPath()
+  if (legal === 'privacy') return <PrivacyPage />
+  if (legal === 'terms') return <TermsPage />
   if (!ready) return null
-  if (!seenWelcome) return <WelcomeScreen />
+  if (!seenWelcome || !hasValidConsent(consent)) return <WelcomeScreen />
 
   return (
     <div className="app-shell min-h-full">

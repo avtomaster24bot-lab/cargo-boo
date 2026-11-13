@@ -9,8 +9,8 @@ import type { PaymentMethod } from '../types'
 
 const PAYMENTS: { id: PaymentMethod; label: string; hint: string }[] = [
   { id: 'cash', label: 'Наличные', hint: 'Водителю при встрече' },
-  { id: 'card', label: 'Карта', hint: 'Оплата позже, демо' },
-  { id: 'kaspi', label: 'Kaspi', hint: 'Kaspi QR, демо' },
+  { id: 'card', label: 'Карта через банк', hint: 'Halyk или Freedom, номер карты не вводится' },
+  { id: 'kaspi', label: 'Kaspi', hint: 'Через Kaspi, номер карты не вводится' },
 ]
 
 export function ConfirmScreen() {
@@ -176,7 +176,7 @@ export function ConfirmScreen() {
               </button>
             ))}
           </div>
-          <p className="mt-2 text-[11px] text-ink-soft">В этой версии оплата только выбирается, списания нет.</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">В этой версии оплата только выбирается, списания нет. Безналичный платёж в рабочем сервисе пойдёт через лицензированного оператора в Казахстане (Kaspi, Halyk или Freedom). Номер карты в Vezu не вводится и не хранится.</p>
         </div>
 
         <div className="card p-3">

@@ -1,4 +1,5 @@
 import { ChevronLeft, MessageCircle, Minus, Plus } from 'lucide-react'
+import { ContactPhone } from '../components/ContactPhone'
 import { useState } from 'react'
 import { MapView } from '../components/MapView'
 import { StatusBadge } from '../components/StatusBadge'
@@ -46,6 +47,12 @@ export function DriverOrderScreen() {
         <p className="mt-1 text-sm leading-snug">
           <span className="font-bold text-coral">B</span> {order.dropoff.address}
         </p>
+        {order.status !== 'searching' && (order.clientName || order.clientPhone) && (
+          <div className="mt-3 text-sm">
+            <p className="font-extrabold">{order.clientName || 'Клиент'}</p>
+            <ContactPhone phone={order.clientPhone} status={order.status} label="Позвонить клиенту" />
+          </div>
+        )}
         {order.cargoDescription && <p className="mt-3 text-sm text-ink-soft">{order.cargoDescription}</p>}
         {order.cargoPhoto && (
           <img src={order.cargoPhoto} alt="Груз" className="mt-3 h-32 w-full rounded-2xl object-cover" />

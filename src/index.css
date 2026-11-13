@@ -190,3 +190,12 @@ select {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.prose-legal h2 {
+  margin-top: 1.25rem;
+}
+
+.prose-legal a {
+  color: var(--color-teal-dark);
+  font-weight: 700;
+}

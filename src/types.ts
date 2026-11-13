@@ -113,6 +113,12 @@ export interface Order {
   messages: ChatMessage[]
   rating?: Rating
   statusHistory: StatusEvent[]
+  /** Имя клиента на заказе. Нужно водителю после принятия. */
+  clientName: string
+  /** Телефон клиента. Показывается другой стороне только пока заказ активен. */
+  clientPhone: string
+  /** Когда персональные поля заказа уже обезличены по сроку хранения. */
+  anonymisedAt?: string
 }
 
 export interface Driver {
@@ -154,7 +160,7 @@ export type PlanId = 'day' | 'week' | 'month'
 
 export type SubscriptionKind = 'trial' | PlanId
 
-export type SubPaymentMethod = 'kaspi' | 'card'
+export type SubPaymentMethod = 'kaspi' | 'halyk' | 'freedom'
 
 export interface DriverSubscription {
   kind: SubscriptionKind | null
@@ -172,4 +178,26 @@ export interface SubPayment {
   periodStart: string
   periodEnd: string
   status: 'paid'
+}
+
+export interface ConsentRecord {
+  privacyVersion: string
+  termsVersion: string
+  privacyAcceptedAt: string
+  termsAcceptedAt: string
+  withdrawnAt: string | null
+}
+
+export type AuditAction =
+  | 'consent_accepted'
+  | 'consent_withdrawn'
+  | 'data_exported'
+  | 'account_deleted'
+  | 'orders_anonymised'
+
+export interface AuditEvent {
+  id: string
+  action: AuditAction
+  at: string
+  detail?: string
 }
