@@ -1,0 +1,192 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Unbounded", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #101828;
+  --color-ink-soft: #475467;
+  --color-navy: #12233a;
+  --color-navy-deep: #0c1829;
+  --color-teal: #0e9f8a;
+  --color-teal-dark: #0b7d6d;
+  --color-mint: #e7f7f3;
+  --color-amber: #f5a524;
+  --color-coral: #ff5a3d;
+  --color-cream: #f3efe6;
+  --color-paper: #fffcf7;
+  --color-line: #e6dfd2;
+  --color-kaspi: #f14635;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  background: #0c1829;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: #0c1829;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100%;
+  background: var(--color-cream);
+  position: relative;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.35);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-cream);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.safe-top {
+  padding-top: max(12px, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.sheet {
+  background: var(--color-paper);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -12px 40px rgba(16, 24, 40, 0.12);
+}
+
+.card {
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #14b8a0 0%, #0b7d6d 100%);
+  color: white;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  border: 0;
+  box-shadow: 0 10px 24px rgba(11, 125, 109, 0.35);
+}
+
+.cta:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.cta-navy {
+  background: linear-gradient(180deg, #1c3a5c 0%, #12233a 100%);
+  box-shadow: 0 10px 24px rgba(18, 35, 58, 0.3);
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #d5e3d4;
+  font-family: inherit;
+  z-index: 0;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(255, 252, 247, 0.75) !important;
+}
+
+.cb-marker-wrap {
+  background: none;
+  border: 0;
+}
+
+.cb-pin {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 8px 16px rgba(16, 24, 40, 0.28);
+}
+
+.cb-pin span {
+  transform: rotate(45deg);
+  display: block;
+}
+
+.cb-pin-from {
+  background: #0e9f8a;
+}
+
+.cb-pin-to {
+  background: #ff5a3d;
+}
+
+.cb-pin-car {
+  background: #12233a;
+  border-radius: 50%;
+  transform: none;
+}
+
+.cb-pin-car span {
+  transform: none;
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #0e9f8a;
+  box-shadow: 0 0 0 0 rgba(14, 159, 138, 0.6);
+  animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  70% {
+    box-shadow: 0 0 0 12px rgba(14, 159, 138, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(14, 159, 138, 0);
+  }
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
